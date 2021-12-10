@@ -1,9 +1,13 @@
 import { Component } from "react";
-import "./App.css";
 
 import ContactForm from "./components/ContactForm/ContactForm";
 import ContactList from "./components/ContactList";
 import Filter from "./components/Filter";
+import * as storage from "./services/localStorage";
+
+import "./App.css";
+
+const STORAGE_KEY = "contacts";
 
 class App extends Component {
   state = {
@@ -15,6 +19,20 @@ class App extends Component {
     ],
     filter: "",
   };
+
+  componentDidMount() {
+    const savedContacts = storage.get(STORAGE_KEY);
+    if (savedContacts) {
+      this.setState({ contacts: savedContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { contacts } = this.state;
+    if (prevState.contacts !== contacts) {
+      storage.save(STORAGE_KEY, contacts);
+    }
+  }
 
   addContact = ({ name, number, id }) => {
     const { contacts } = this.state;
@@ -56,20 +74,6 @@ class App extends Component {
       contacts.name.toLowerCase().includes(normalizedFilter)
     );
   };
-
-  componentDidMount() {
-    const savedContacts = JSON.parse(localStorage.getItem("contacts"));
-
-    if (savedContacts) {
-      this.setState({ contacts: savedContacts });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
-    }
-  }
 
   render() {
     const { filter } = this.state;
